@@ -64,3 +64,23 @@ app.post("/login", (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
+app.post("/register", async (req, res) => {
+    const { nit, email, phone, password } = req.body;
+
+    // 🔍 Validaciones del servidor
+    if (!nit || !email || !phone || !password) {
+        return res.json({ success: false, message: "Todos los campos son obligatorios." });
+    }
+
+    // Encriptar contraseña antes de guardarla
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const sql = "INSERT INTO usuarios (nit, email, phone, password) VALUES (?, ?, ?, ?)";
+    db.query(sql, [nit, email, phone, hashedPassword], (err, result) => {
+        if (err) {
+            console.error("❌ Error en el registro:", err);
+            return res.json({ success: false, message: "Error en el servidor o NIT ya registrado." });
+        }
+        res.json({ success: true, message: "Registro exitoso." });
+    });
+});
