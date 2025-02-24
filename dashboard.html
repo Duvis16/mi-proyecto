@@ -16,15 +16,37 @@
             border-radius: 5px; border: 1px solid #ddd; cursor: pointer;
         }
         .rete-btn { background-color: #3498db; color: white; }
+        .logout-btn { background-color: #e74c3c; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Seleccione una opción</h2>
-        <button class="rete-btn">Rete Fuente</button>
-        <button class="rete-btn">Rete IVA</button>
-        <button class="rete-btn">Rete ICA</button>
-        <p><a href="login.html">Cerrar sesión</a></p>
+        <button class="rete-btn" onclick="goTo('rete-fuente.html')">Rete Fuente</button>
+        <button class="rete-btn" onclick="goTo('rete-iva.html')">Rete IVA</button>
+        <button class="rete-btn" onclick="goTo('rete-ica.html')">Rete ICA</button>
+        <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
     </div>
+
+    <script>
+        // Verificar si el usuario está autenticado
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "login.html"; // Redirigir si no hay sesión
+            }
+        });
+
+        // Redirigir a las opciones de Rete
+        function goTo(page) {
+            window.location.href = page;
+        }
+
+        // Cerrar sesión
+        function logout() {
+            localStorage.removeItem("token"); // Eliminar token
+            window.location.href = "login.html"; // Redirigir a login
+        }
+    </script>
 </body>
 </html>

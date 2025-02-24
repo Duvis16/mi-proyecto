@@ -1,38 +1,35 @@
 const express = require("express");
-const mysql = require("mysql2");
+const mysql = require("mysql");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
-const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt");
 
 const app = express();
 const PORT = 3000;
+const SECRET_KEY = "claveSecreta123"; // 🔑 Clave para firmar JWT
 
-// Configuración de MySQL
+app.use(express.json());
+app.use(cors());
+
+// Configuración de la BD
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "Duvis1620*", // ⚠️ Usa variables de entorno
-    database: "mi_proyecto"
+    password: "",
+    database: "funza_db"
 });
 
-// Conectar a MySQL
 db.connect(err => {
     if (err) {
-        console.error("❌ Error conectando a MySQL:", err);
-        return;
+        console.error("❌ Error al conectar con la base de datos:", err);
+    } else {
+        console.log("✅ Conexión a la BD exitosa.");
     }
-    console.log("✅ Conectado a MySQL");
 });
 
-app.use(cors());
-app.use(bodyParser.json());
-
-// 📌 Ruta de Inicio de Sesión (Verificar usuario y comparar contraseña)
+// 🟢 Ruta de LOGIN
 app.post("/login", (req, res) => {
     const { nit, password } = req.body;
-
-    console.log("📌 NIT recibido:", nit);
-    console.log("📌 Contraseña recibida:", password);
 
     const sql = "SELECT * FROM usuarios WHERE nit = ?";
     db.query(sql, [nit], async (err, result) => {
@@ -41,16 +38,15 @@ app.post("/login", (req, res) => {
             return res.json({ success: false, message: "Error en el servidor" });
         }
 
-        console.log("📌 Resultado de la consulta:", result);
-
         if (result.length > 0) {
             const user = result[0];
             const passwordMatch = await bcrypt.compare(password, user.password);
 
-            console.log("📌 Coincide la contraseña:", passwordMatch);
-
             if (passwordMatch) {
-                res.json({ success: true, message: "Inicio de sesión exitoso" });
+                // 🔐 Generar JWT
+                const token = jwt.sign({ nit: user.nit, id: user.id }, SECRET_KEY, { expiresIn: "1h" });
+
+                res.json({ success: true, message: "Inicio de sesión exitoso", token });
             } else {
                 res.json({ success: false, message: "Contraseña incorrecta" });
             }
@@ -60,27 +56,21 @@ app.post("/login", (req, res) => {
     });
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+// 🟢 Ruta protegida (ejemplo)
+app.get("/perfil", verifyToken, (req, res) => {
+    res.json({ message: "Bienvenido al perfil", user: req.user });
 });
-app.post("/register", async (req, res) => {
-    const { nit, email, phone, password } = req.body;
 
-    // 🔍 Validaciones del servidor
-    if (!nit || !email || !phone || !password) {
-        return res.json({ success: false, message: "Todos los campos son obligatorios." });
-    }
+// Middleware para verificar token
+function verifyToken(req, res, next) {
+    const token = req.headers["authorization"];
+    if (!token) return res.status(401).json({ message: "Acceso denegado" });
 
-    // Encriptar contraseña antes de guardarla
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const sql = "INSERT INTO usuarios (nit, email, phone, password) VALUES (?, ?, ?, ?)";
-    db.query(sql, [nit, email, phone, hashedPassword], (err, result) => {
-        if (err) {
-            console.error("❌ Error en el registro:", err);
-            return res.json({ success: false, message: "Error en el servidor o NIT ya registrado." });
-        }
-        res.json({ success: true, message: "Registro exitoso." });
+    jwt.verify(token.split(" ")[1], SECRET_KEY, (err, decoded) => {
+        if (err) return res.status(403).json({ message: "Token inválido" });
+        req.user = decoded;
+        next();
     });
-});
+}
+
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));

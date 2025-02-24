@@ -29,46 +29,24 @@
 
     <script>
         async function login() {
-    const nit = document.getElementById("nit").value.trim();
-    const password = document.getElementById("password").value.trim();
+            const nit = document.getElementById("nit").value.trim();
+            const password = document.getElementById("password").value.trim();
 
-    const response = await fetch("http://localhost:3000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nit: decodeURIComponent(nit), password })
-    });
+            const response = await fetch("http://localhost:3000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nit, password })
+            });
 
-    const data = await response.json();
-    alert(data.message);
-}
-app.post("/login", (req, res) => {
-    const { nit, password } = req.body;
+            const data = await response.json();
 
-    console.log("📌 NIT recibido:", nit);
-    console.log("📌 Contraseña recibida:", password);
-
-    const sql = "SELECT * FROM usuarios WHERE nit = ?";
-    db.query(sql, [nit], async (err, result) => {
-        if (err) {
-            console.error("❌ Error en la consulta SQL:", err);
-            return res.json({ success: false, message: "Error en el servidor" });
-        }
-
-        console.log("📌 Resultado de la consulta:", result);
-
-        if (result.length > 0) {
-            const user = result[0];
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            console.log("📌 Coincide la contraseña:", passwordMatch);
-
-            if (passwordMatch) {
-                res.json({ success: true, message: "Inicio de sesión exitoso" });
+            if (data.success) {
+                localStorage.setItem("token", data.token); // Guardar JWT
+                window.location.href = "dashboard.html"; // Redirigir al Dashboard
             } else {
-                res.json({ success: false, message: "Contraseña incorrecta" });
+                alert(data.message);
             }
-        } else {
-            res.json({ success: false, message: "Usuario no encontrado" });
         }
-    });
-});
+    </script>
+</body>
+</html>
