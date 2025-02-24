@@ -29,27 +29,15 @@
 
     <script>
         async function login() {
-            const nit = document.getElementById("nit").value;
-            const password = document.getElementById("password").value;
+    const nit = document.getElementById("nit").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-            if (!nit || !password) {
-                alert("Por favor, complete todos los campos.");
-                return;
-            }
+    const response = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nit: decodeURIComponent(nit), password })
+    });
 
-            const response = await fetch("http://localhost:3000/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nit, password })
-            });
-
-            const data = await response.json();
-            alert(data.message);
-
-            if (data.success) {
-                window.location.href = "dashboard.html"; // Redirigir si el login es exitoso
-            }
-        }
-    </script>
-</body>
-</html>
+    const data = await response.json();
+    alert(data.message);
+}
