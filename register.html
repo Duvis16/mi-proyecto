@@ -53,33 +53,60 @@
 
     <script>
         async function register() {
-            const nit = document.getElementById("nit").value;
-            const email = document.getElementById("email").value;
-            const phone = document.getElementById("phone").value;
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
+            const nit = document.getElementById("nit").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
+            // 🔍 Validaciones
             if (!nit || !email || !phone || !password || !confirmPassword) {
                 alert("Todos los campos son obligatorios.");
                 return;
             }
-
+            if (!/^\d+$/.test(nit)) {
+                alert("El NIT solo debe contener números.");
+                return;
+            }
+            if (!/^\d+$/.test(phone) || phone.length < 7 || phone.length > 10) {
+                alert("El teléfono debe contener entre 7 y 10 dígitos.");
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert("Ingrese un correo electrónico válido.");
+                return;
+            }
             if (password !== confirmPassword) {
                 alert("Las contraseñas no coinciden.");
                 return;
             }
+            if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password)) {
+                alert("La contraseña debe tener al menos 6 caracteres, incluyendo una mayúscula, una minúscula y un número.");
+                return;
+            }
 
-            const response = await fetch("http://localhost:3000/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nit, email, phone, password })
-            });
+            // 🔐 Enviar datos protegidos
+            try {
+                const response = await fetch("http://localhost:3000/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        nit: encodeURIComponent(nit),
+                        email: encodeURIComponent(email),
+                        phone: encodeURIComponent(phone),
+                        password: encodeURIComponent(password)
+                    })
+                });
 
-            const data = await response.json();
-            alert(data.message);
+                const data = await response.json();
+                alert(data.message);
 
-            if (data.success) {
-                window.location.href = "index.html"; // Redirige al login
+                if (data.success) {
+                    window.location.href = "index.html"; // Redirige al login
+                }
+            } catch (error) {
+                alert("Error al conectar con el servidor.");
+                console.error("Error:", error);
             }
         }
     </script>
