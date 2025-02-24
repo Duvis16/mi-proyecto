@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GRUPO FUNZA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            width: 300px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .login-btn {
+            background-color: #6fbf44;
+        }
+        .register-btn {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>GRUPO FUNZA</h2>
+        <input type="text" id="username" placeholder="Ingrese su NIT">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button class="login-btn" onclick="login()">Acceder</button>
+        <button class="register-btn" onclick="window.location.href='register.html'">Registrarse</button>
+        <p><a href="#">¿Olvidó su contraseña?</a></p>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (!username || !password) {
+                alert("Por favor, complete todos los campos.");
+                return;
+            }
+
+            const response = await fetch("http://localhost:3000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+
+            if (data.success) {
+                window.location.href = "dashboard.html"; // Redirige si el login es exitoso
+            }
+        }
+    </script>
+</body>
+</html>
