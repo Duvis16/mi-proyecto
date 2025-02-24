@@ -11,14 +11,12 @@ const SECRET_KEY = "claveSecreta123"; // 🔑 Clave para firmar JWT
 app.use(express.json());
 app.use(cors());
 
-// Configuración de la BD
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
+    password: "Duvis1620*", // 🔑 Agrega la contraseña correcta aquí
     database: "funza_db"
 });
-
 db.connect(err => {
     if (err) {
         console.error("❌ Error al conectar con la base de datos:", err);
